@@ -1,4 +1,4 @@
-data_patients <- read.csv("./Debernardi.csv")
+data_patients <- read.csv("./data/Debernardi.csv")
 
 data_patients$diagnosis <- as.character(data_patients$diagnosis)
 
