@@ -126,3 +126,64 @@ ejercicio3 <- function() {
 }
 
 ejercicio3()
+
+ejercicio4 <- function(){
+  hist(datos$Perim_encef, probability = TRUE, main = "Histograma comparado con densidades")
+  kde_perim_encef <- density(
+    datos$Perim_encef,
+    kernel = "gaussian"
+  )
+  lines(
+    kde_perim_encef,
+    col = "red",
+    lw = "2"
+  )
+  sexos <- c("Mujer", "Varon")
+  colors <- c("pink", "blue")
+  for (i in seq_along(sexos)){
+    kde_perim_encef <- density(
+      datos$Perim_encef[datos$Sexo == sexos[i]],
+      kernel = "gaussian",
+    )
+    lines(
+      kde_perim_encef,
+      col = colors[i],
+      lw = "2",
+      legend = sexos[i]
+    )
+  }
+  legend("topleft", legend = sexos, col = colors,lty = 1:3)
+  
+}
+
+ejercicio4()
+
+ejercicio5 <- function(){
+  hist(datos$Perim_encef, probability = TRUE, main = "Histograma comparado con densidades")
+  kde_perim_encef <- density(
+    datos$Perim_encef,
+    kernel = "gaussian"
+  )
+  lines(
+    kde_perim_encef,
+    col = "red",
+    lw = "2"
+  )
+  tipos_embarazo <- c("Simple", "Multiple")
+  colors <- c("blue", "green")
+  for (i in seq_along(tipos_embarazo)){
+    kde_perim_encef <- density(
+      datos$Perim_encef[datos$Tipo_embarazo == tipos_embarazo[i]],
+      kernel = "gaussian",
+    )
+    lines(
+      kde_perim_encef,
+      col = colors[i],
+      lw = "2",
+    )
+  }
+  legend("topleft", legend = tipos_embarazo, col = colors,lty = 1:3)
+  
+}
+
+ejercicio5()
