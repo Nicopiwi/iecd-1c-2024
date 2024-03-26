@@ -96,7 +96,7 @@ for (i in seq_along(kernels)) {
     kde <- density(
         Perim_encef,
         kernel = kernels[i],
-        width = dx / 2
+        adjust = 1/2
     )
 
     if (i == 1){
@@ -123,7 +123,7 @@ for (i in seq_along(kernels)) {
     kde <- density(
         Perim_encef,
         kernel = kernels[i],
-        width = dx * 2
+        adjust=2
     )
 
     if (i == 1){
