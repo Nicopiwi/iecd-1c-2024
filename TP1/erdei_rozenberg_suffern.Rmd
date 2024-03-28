@@ -29,7 +29,7 @@ attach(datos_encuesta)
 ## Ejercicio 1
 
 ```{r ejercicio1}
-hist(
+perim_encef_hist <- hist(
   Perim_encef, 
   probability = TRUE,
   main="Histograma de perimetro encefalico comparado con densidades estimadas",
@@ -63,35 +63,59 @@ Primero, verificamos que no hayan registros de bebés de edad mayor a 2 años
 sum(Edad > 2)
 ```
 
-No los hay. Estimamos la probabilidad de que el perímetro encefálico se encuentre en el rango de 42 cm a 48 cm utilizando tanto los datos arrojados por el histograma, como aproximando la integral de la densidad estimada con el kernel Epanechnikov
+No los hay. Estimamos la probabilidad de que el perímetro encefálico se encuentre en el rango de 42 cm a 48 cm primero aproximando la integral de la densidad estimada con el kernel Epanechnikov
 
 ```{r ejercicio2.2}
 lower_bound <- 42
 upper_bound <- 48
 
-indices_in_range <- (kde_perim_encef$epanechnikov$x >= lower_bound &
-    kde_perim_encef$epanechnikov$x <= upper_bound)
-dx <- diff(kde_perim_encef$epanechnikov$x[1:2])
 
-density_in_range <- kde_perim_encef$epanechnikov$y[indices_in_range]
-prob_epa <- sum(density_in_range) * dx
-cat("Probabilidad utilizando densidad estimada:", prob_epa)
+bw <- kde_perim_encef$epanechnikov$bw
+
+prob_estim_epa <- function(datos, h, x){
+  n <- length(datos)
+  u <- (x - datos)/h
+  return((3/(4*n)) * sum(
+    (u - (u^3)/3 + (2/3)) * (abs(u) <= 1) 
+    + (4/3) * (u > 1)
+  ))
+}
+
+
+prob_res <- prob_estim_epa(
+  Perim_encef, 
+  bw, 
+  upper_bound
+) - prob_estim_epa(
+  Perim_encef, 
+  bw, 
+  lower_bound
+)
+cat("Probabilidad integrando densidad estimada:", prob_res)
+
+
 ```
+Ahora utilizando tanto los datos arrojados por el histograma. Primero, observamos que los límites se encuentran en los últimos dos bins.
 
+```{r ejercicio2.3}
+
+perim_encef_hist$breaks
+
+```
+```{r ejercicio2.4}
+nbins <- length(perim_encef_hist$density)
+prob_estim_hist <- (
+  perim_encef_hist$density[nbins-1] * (45-42) 
+  + perim_encef_hist$density[nbins] * (48-45)
+)
+cat("Probabilidad obtenida mediante histograma:", prob_estim_hist)
+```
 ## Ejercicio 3
 
-Primero, observamos las ventanas 
-
-```{r ejercicio3.ventanas}
-for (ker in kernels) {
-    dx <- diff(kde_perim_encef[[ker]]$x[1:2])
-    cat("Ventana para nucleo", ker, ":", dx, "\n")
-}
-```
-Vemos que ha sido seteada como la misma para los tres métodos. Graficamos las densidades estimadas utilizando tanto el doble de ventana, como la mitad.
+Graficamos las densidades estimadas utilizando tanto el doble de ventana, como la mitad.
 
 ```{r ejercicio3}
-dx <- diff(kde_perim_encef[["gaussian"]]$x[1:2])
+
 for (i in seq_along(kernels)) {
     kde <- density(
         Perim_encef,
@@ -103,7 +127,7 @@ for (i in seq_along(kernels)) {
         plot(
             kde,
             col = colors[i],
-            main = sprintf("Densidad estimada con ventana %f", dx / 2),
+            main = sprintf("Densidad estimada con ventana %f", kde$bw),
             xlab="Perimetro encefalico",
             ylab="Densidad"
         )
@@ -130,7 +154,7 @@ for (i in seq_along(kernels)) {
         plot(
             kde,
             col = colors[i],
-            main = sprintf("Densidad estimada con ventana %f", dx * 2),
+            main = sprintf("Densidad estimada con ventana %f", kde$bw),
             xlab="Perimetro encefalico",
             ylab="Densidad"
         )
