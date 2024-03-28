@@ -13,6 +13,7 @@ rm(list=ls())
 ```{r dependencies}
 # Librería utilizada para realizar bagplot
 library(aplpack)
+library(ggplot2)
 ```
 
 ## Carga y preparación de los datos
@@ -248,13 +249,55 @@ table(Tipo_embarazo) / length(Tipo_embarazo)
 ```
 Vemos que aproximadamente el 3% de los registros provienen de embarazos múltiples, por lo que consideramos que no podemos sacar conclusiones acerca de esta diferencia.
 
+## Ejercicio 6
+
 ```{r ejercicio6}
-bagplot(
+bagplot_pc_t <- bagplot(
   Perim_encef, 
   Talla,
   main = "Bagplot entre Perimetro encefalico y Talla",
   xlab="Perimetro encefalico (cm)",
-  ylab="Talla"
+  ylab="Talla (cm)"
 )
 
+```
+Se pueden identificar fácilmente varios puntos atípicos, especialmente con perímetro encefálico chico, y tallas alrededor de la media de la talla. No necesariamente tienen talla alta en estos casos. Sí se ven tallas muy altas (Hay puntos con tallas mayores a 90 cm). También casos donde la talla es muy baja (menor a 40 cm) y un perímetro encefálico muy alto (cercano a 50 cm).
+
+## Ejercicio 7
+
+```{r ejercicio7}
+bagplot_pc_t_2 <- bagplot(
+  c(bagplot_pc_t$pxy.bag[,'x'], bagplot_pc_t$pxy.outer[,'x']), 
+  c(bagplot_pc_t$pxy.bag[,'y'], bagplot_pc_t$pxy.outer[,'y']),
+  main = "Bagplot entre Perimetro encefalico y Talla",
+  xlab="Perimetro encefalico (cm)",
+  ylab="Talla (cm)"
+)
+
+```
+Se visualizan datos atípicos, mas muchos menos que con los datos anteriores y más cercanos a la cápsula convexa.
+
+## Ejercicio 8
+
+```{r ejercicio8}
+#plot(NULL, xlim = range(Perim_encef), ylim = range(Talla), xlab = "Perimetro encefalico", ylab = "Talla")
+
+bags <- c()
+subset_data <- c()
+for (sexo in unique(Sexo)) {
+  subset_data[[sexo]] <- datos_encuesta[Sexo == sexo, ]
+  bags[[sexo]] <- compute.bagplot(subset_data[sexo])
+}
+
+ggplot(datos_encuesta, aes(Perim_encef, Talla, color = Sexo)) +
+  geom_polygon(data = bags["Mujer"]$hull.loop, fill = "green") +
+  #geom_polygon(data = bags["Mujer"]$hull.bag, fill = "green") +
+  #geom_point(data = bags["Mujer"]$pxy.outlier, col = "green", pch = 16) +
+  geom_polygon(data = bags["Varon"]$hull.loop, fill = "red") +
+  #geom_polygon(data = bags["Varon"]$hull.bag, fill = "red") +
+  #geom_point(data = bags["Varon"]$pxy.outlier, col = "red", pch = 16) +
+  labs(title = "Bagplot by Category", x = "Perimetro encefalico", y = "Talla Variable") +
+  theme_minimal() +  # Minimalistic theme
+  scale_color_manual(values = c("red", "blue")) +
+  guides(color = guide_legend(title = "Category"))  
 ```
