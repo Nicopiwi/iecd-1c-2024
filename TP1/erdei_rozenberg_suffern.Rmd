@@ -293,8 +293,8 @@ Se visualizan datos atípicos, mas muchos menos que con los datos anteriores y m
 
 ```{r ejercicio8, fig.height=10, fig.width=15}
 
-xlim = c(min(Perim_encef), max(Perim_encef))
-ylim = c(min(Talla), max(Talla))
+xlim <- c(min(Perim_encef), max(Perim_encef))
+ylim <- c(min(Talla), max(Talla))
 
 par(mfrow = c(1, 2))
 
