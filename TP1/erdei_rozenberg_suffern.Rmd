@@ -61,7 +61,7 @@ for (i in seq_along(kernels)) {
 legend(x="topleft", legend = kernels, col = colors, lty = 1:3)
 ```
 
-Se puede observar que la densidad estimada por cada uno de los núcleos proporcionados ajustan de forma muy similar y que se asimilan al histograma.
+Se puede observar que la densidad estimada por cada uno de los núcleos proporcionados ajustan de forma muy similar y que se asimilan al histograma. Sin embargo, el histograma no recopila la información de que para valores considerablemente cercanos a 50, la densidad disminuye rápidamente hasta 0.
 
 ## Ejercicio 2
 
@@ -183,6 +183,8 @@ legend(x="topleft", legend = kernels, col = colors, lty = 1:3)
 
 ```
 
+Se puede observar que la densidad estimada con una ventana de la mitad del tamaño que la primera, la densidad es mucho más fluctuante que en el caso de la ventana de tamaño doble. Esto puede deberse a que para cada punto en el eje x hay menor cantidad de datos que se encuentren a distancia de una ventana, y por lo tanto más variable.
+
 ## Ejercicio 4
 
 ```{r ejercicio4}
@@ -289,8 +291,7 @@ Se visualizan datos atípicos, mas muchos menos que con los datos anteriores y m
 
 ## Ejercicio 8
 
-```{r ejercicio8}
-#plot(NULL, xlim = range(Perim_encef), ylim = range(Talla), xlab = "Perimetro encefalico", ylab = "Talla")
+```{r ejercicio8, fig.height=10, fig.width=15}
 
 xlim = c(min(Perim_encef), max(Perim_encef))
 ylim = c(min(Talla), max(Talla))
