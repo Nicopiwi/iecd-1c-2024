@@ -1,0 +1,315 @@
+---
+title: "Estadística descriptiva"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+### Explorar los datos debe ser la primera etapa de cualquier análisis de datos.
+
+### A partir de un conjunto de datos vamos a hacer gráficos y calcular medidas resumen de los datos para orientarnos acerca de la distribución poblacional de dónde provienen.
+
+***
+
+Empecemos cargando un conjunto de datos y evaluando los tipos de variables que nos brinda.
+
+Borramos todo y establecemos el directorio de trabajo 
+
+```{r,echo=TRUE}
+rm(list=ls())
+
+#setwd("~/Dropbox/IECD_3M/2022/Clases practicas 2022/Clase 2")
+```
+
+El archivo $\texttt{datos_titanic.csv}$ contiene información sobre una muestra seleccionada al azar de las personas, no tripulantes, que viajaban en el barco tristemente célebre _Titanic_, al momento de su hundimiento en el Océano Atlántico. Carguemos esos datos que están en formato CSV (comma separated values).
+
+```{r,echo=TRUE}
+datosTitanic <- read.csv("datos_titanic.csv")
+# Miramos los nombres de las variables
+names(datosTitanic)
+head(datosTitanic)
+attach(datosTitanic)
+```
+
+Comencemos a trabajar con las variables en forma
+individual.
+
+Debemos identificar el tipo de variable con la que
+vamos a trabajar ya que dependiendo del tipo de variables que tengamos, se determina cuál análisis aplicar.
+
+Los tipos de datos pueden ser: 
+
+- numérico
+- entero
+- caracter
+- factor 
+- lógico
+
+Veamos cómo reconoce algunas variables.
+```{r, echo=T}
+class(Survived)
+class(Pclass)
+class(Sex)
+class(Age)
+```
+Es correcto que identifique a las variables Survived y Pclass como enteras pero en realidad queremos que sean variables categóricas, así que las transformamos.
+```{r, echo=T}
+Survived <- as.factor(Survived)
+class(Survived)
+Pclass <- as.factor(Pclass)
+class(Pclass)
+```
+El comando $\textsf{table}$ aplicado a una variable categórica cuenta la frecuencia de cada categoría.
+
+```{r}
+table(Sex)
+table(Survived)
+```
+
+El comando $\textsf{barplot}$ realiza un gráfico de barras de una variable categórica, para la que hemos calculado antes la tabla de frecuencias con $\textsf{table}$.
+
+```{r}
+tablaSexo <- table(Sex)
+barplot(tablaSexo,width=0.02,xlim=c(0,0.15),col="blue",density=8)
+tablaSobre <- table(Survived)/sum(table(Survived)) ## acá tenemos la tabla de frecuencias relativas
+barplot(tablaSobre,width=0.02,xlim=c(0,0.15),col="red")
+```
+
+También podemos hacer gráficos de torta con variables categóricas.
+
+```{r}
+tablaClase <- table(Pclass)
+tablaClase
+porcentajes <- as.numeric(round(((prop.table(tablaClase))*100),2))
+etiquetas <- c("Clase 1", "Clase 2", "Clase 3")
+etiquetas <- paste(etiquetas, porcentajes)
+etiquetas <- paste(etiquetas, "%", sep = "")
+pie(porcentajes,etiquetas,col=c("blue","green","red"),main="Gráfico de Torta - Clases")
+```
+
+```{r}
+contingencia <- table(Sex,Pclass)
+contingencia
+barplot(contingencia,width=0.02,xlim=c(0,0.15),col= c("blue","red"),main="Sexo por Clase",legend = rownames(contingencia),args.legend = list(x = "topleft") )
+```
+
+De otro modo
+ 
+```{r}
+barplot(contingencia,beside=TRUE,col= c("blue","red"),main="Sexo por Clase",legend = rownames(contingencia),args.legend = list(x = "topleft") )
+contingencia2 <- table(Pclass,Sex)/sum(table(Pclass,Sex)) ## frecuencias relativas
+barplot(contingencia2,width=0.02,xlim=c(0,0.15),col=c("blue","red","green"),main="Clase por Sexo",legend = rownames(contingencia2),args.legend = list(x = "topleft") )
+```
+
+## Gráfico de mosaico
+
+```{r}
+mosaicplot(contingencia,color=2:4)
+mosaicplot(t(contingencia),color=2:3)
+```
+
+## Histograma
+
+¿Qué visualizamos en un histograma?
+
++ Intervalo de variación de los datos (mínimo-máximo).
++ Sub-intervalos más frecuentes.
++ Simetría o asimetría de los datos.
++ Cantidad de modas (una moda: distribución unimodal, dos modas: distribución bimodal).
+
+```{r}
+hist(Fare,probability = TRUE,main="Histograma de datos de la variable Tarifa (Fare)")
+```
+
+Algunos histogramas para observar.
+
+```{r,echo=FALSE}
+set.seed(87)
+datos_exponencial <- rexp(n=100,rate=0.2)
+datos_normales <- rnorm(100,20,2)
+datos_uniformes <- runif(100,18,22)
+bimodal <- c(rnorm(50,-1,1),rnorm(50,6,2))
+par(mfrow=c(2,2))
+hist(datos_normales,probability = TRUE,main="Histograma",xlab="datos")
+hist(datos_uniformes,probability = TRUE,main="Histograma",xlab="datos")
+hist(datos_exponencial,probability = TRUE,main="Histograma",xlab="datos")
+hist(bimodal,probability = TRUE,main="Histograma",xlab="datos")
+```
+
+
+## Boxplot y QQ-plot.
+
+Ahora vamos a trabajar con boxplot y qq-plot. Para eso, introduzcamos la definición de cuantiles y distancia intercuartil empíricos.
+
+#### $p$-cuantil empírico de un conjunto de $n$ datos
+Para $p \in (0,1)$, lo simbolizaremos $c_p$. ¿Cómo lo calculamos?
+
+Ordenamos los datos de manera creciente. Si $p.(n+1)$ es un número entero, $c_p$ es el dato que ocupa el lugar $p.(n+1)$ de manera ordenada; si $p.(n+1)$ no es un número entero, $c_p$ es un promedio ponderado de los dos datos que tiene al lado.
+
+Al $0,25$-cuantil lo llamaremos **cuartil inferior**, y al $0,75$-cuantil lo denominaremos **cuartil superior**.
+
+La distancia intercuartil empírica, que la simbolizaremos $d_I$, es
+$$d_I=c_{0,75}-c_{0,25}\,.$$
+
+Por ejemplo, calculemos los cuartiles inferior y superior y la distancia intercuartil del conjunto de datos $\{-2,78; -1; 4,4; -0,52; 0,02; -1,77; -0,12; -1,07; -2,54; 1,48; 7,8\}$.
+
+Empecemos ordenando los datos 
+
+$-2,78; -2,54; -1,77; -1,07; -1; -0,52; -0,12; 0,02; 1,48; 4,4; 7,8$.
+
+Para determinar el cuartil inferior empírico, tenemos que mirar la posición $0,25 . (11+1)= 12/4 =3$ del conjunto de datos *ordenado*. $c_{0,25}=-1,77$.
+
+Para determinar el cuartil superior empírico, tenemos que mirar la posición $0,75 . (11+1)= 12.3/4 =9$ del conjunto de datos *ordenado*. $c_{0,75}=1,48$.
+
+La distancia intercuartil empírica resulta entonces $d_I=1,48-(-1,77)=3,25$
+
+Hay muchas maneras de calcular cuantiles empíricos y R las considera en su comando $\texttt{quantile}$.
+```{r}
+datos <- c(-2.78, -1, 4.4, -0.52, 0.02, -1.77, -0.12, -1.07, -2.54, 1.48, 7.8)
+quantile(datos,0.25)
+quantile(datos,0.75)
+```
+Por defecto considera una manera de calcularlos que es más apropiada para realizaciones que provengan de distribuciones continuas, para que haga la misma cuenta que hicimos ejecutar
+```{r}
+quantile(datos,0.25,type=1)
+quantile(datos,0.75,type=1)
+```
+Siempre que necesiten ayuda de un comando consulten el Help.
+
+## El boxplot es un diagrama de caja.
+
+Es decir, un gráfico con forma de... CAJA. Como el que figura justo acá abajo, que es el de los datos recién utilizados.
+
+```{r, echo=FALSE}
+boxplot(datos)
+```
+
+
+Es una caja rectangular cuyos bordes horizontales marcan los cuartiles y dentro de ella un segmento horizontal que corresponde a la mediana.
+
+A partir de cada borde horizontal hay un segmento vertical punteado hasta el valor del dato más alejado de la caja, que esté a lo sumo a 1,5 $d_I$ del extremo de la caja. Estos segmentos punteados se llaman bigotes.
+
+Además se marca con o a aquellos datos que estén a mayor distancia. Estos datos se denominan datos atípicos o "outliers".
+
+### ¿Qué cosas se pueden ver en un boxplot?
+
++ ubicación de la caja: nos habla de por dónde andan los datos.
++ altura de la caja: nos habla de cuán dispersos están los datos.
++ ubicación de la mediana dentro de la caja, y diferencias de largo en bigotes: nos habla de la simetría de la distribución.
++ presencia de datos atípicos.
+
+Muchas veces sirve graficar dos o más boxplots a la vez para comparar distribuciones.
+
+Por ejemplo:
+
+```{r,echo=FALSE}
+datos_ej1 <- rnorm(50,20,6)
+datos_ej2 <- c(rexp(50,0.2),26)
+datos_ej3 <- runif(50,5,40)
+boxplot(datos_ej1,datos_ej2,datos_ej3)
+```
+
+## El qq-plot es un gráfico de cuantiles.
+
+Sirve para analizar si un conjunto de datos proviene de determinada distribución o no. También sirve para comparar la distribución de dos conjuntos de datos.
+
+Se usa muy frecuentemente para tener idea de si un conjunto de datos proviene de una distribución normal o no.
+
+El qq-plot normal, denominado qq-norm, es un caso particular del qq-plot cuya distribución de referencia es la normal. Es decir que sirve para analizar si un conjunto de datos proviene o no de una distribución normal. Los puntos del gráfico son de la forma (x,y) donde x es el $p$-cuantil de la distribución normal (poblacional) e y es $c_p$ del conjunto de datos (cuantil empírico o muestral). 
+
+Si los datos provienen de una distribución normal, el qq-norm va a parecerse a una recta. La línea recta a la cual debería parecerse la podemos agregar con el comando $\texttt{qqline}$. Acá vemos algunos ejemplos.
+
+¿Parecen ser datos normales?
+
+
+```{r,echo=FALSE}
+par(mfrow=c(2,2))
+qqnorm(datos_normales)
+qqline(datos_normales,col=2)
+qqnorm(datos_uniformes)
+qqline(datos_uniformes,col=2)
+qqnorm(datos_exponencial)
+qqline(datos_exponencial,col=2)
+qqnorm(bimodal)
+qqline(bimodal,col=2)
+```
+
+
+## Medidas de posición: media muestral, mediana muestral y medias $\alpha$-podadas muestrales.
+
+Recordemos que la $\textbf{media muestral}$  es el promedio.
+
+$\overline{x}_n=\frac{x_1+x_2+\cdots+x_n}{n}$
+
+Es una medida de posición muy sensible a la presencia de datos anómalos. 
+
+La $\textbf{mediana muestral}$ es otra medida de posición, y se calcula eligiendo el valor central de los datos. Es decir que para obtenerla, primero hay que ordenar los valores. 
+
+$x_{(1)}\leq x_{(2)}\leq x_{(3)}\leq \cdots \leq x_{(n)}$.
+
+¡Ojo! El subíndice tiene un paréntesis porque simboliza un nuevo orden, no el orden en que los datos fueron apareciendo. $x_{(1)}$ es el menor dato, y $x_{(n)}$ es el mayor. La mediana muestral es el central, en caso de ser una cantidad impar de datos. Si la cantidad de datos es par, la mediana es el promedio de los dos datos centrales.
+
+
+$$\widetilde{x}_n=\begin{cases}  x_{(k+1)} \text{ si } n=2k+1\\ \displaystyle{\frac{x_{(k)}+x_{(k+1)}}{2}} \text{ si } n=2k \end{cases}$$
+
+La mediana es resistente a la presencia de datos atípicos. 
+
+Las media y mediana poblacionales de una variable aleatoria coinciden cuando tiene distribución simétrica. En otro caso, la media y la mediana brindan medidas de centralidad diferentes.
+
+```{r, eval=FALSE, include=FALSE}
+datos_ejemplo_pos <- c(1,2.5,1.2,6.2,3.4,5.1,2.2,30,2.3,4.6)
+datos_ejemplo_pos
+mean(datos_ejemplo_pos)
+median(datos_ejemplo_pos)
+```
+
+
+Las $\textbf{medias}$ $\alpha$-$\textbf{podadas}$ $\textbf{muestrales}$ son promedios de los datos que se calculan dejando afuera cierto porcentaje de ellos. Los datos que se dejan afuera son tomados de los extremos y la cantidad de datos omitidos en cada extremo es $\alpha . n$. En total se omiten $2\alpha . 100\%$ datos.
+
+Por definición, la media $\alpha$-podada muestral es:
+
+$$\overline{x}_{n;\alpha}=\frac{x_{([n\alpha]+1)}+x_{([n\alpha]+2)}+\cdots+x_{(n-[n\alpha])}}{n-2[n\alpha]}$$
+donde los corchetes simbolizan la parte entera del número que encierran.
+
+Calculemos media, mediana y media $0,1$-podada muestrales del conjunto de 11 datos utilizado antes.
+
+```{r}
+mean(datos)
+median(datos)
+mean(datos,trim=0.1)
+```
+
+
+
+## Medidas de dispersión: rango muestral, desvío estándar muestral, distancia intercuartil y MAD.
+
+Las medidas de dispersión son números que representan de alguna manera cuán dispersos están los datos.
+
+El más básico es el $\textbf{rango muestral}$. Es la diferencia entre el mayor valor y el menor valor. Es decir que nos dice cuánto espacio ocupan los datos.
+
+$$rango(x_1,\dots,x_n)=x_{(n)}-x_{(1)}$$
+En R podemos hacerlo usando $\texttt{min}$ y $\texttt{max}$.
+
+
+El $\textbf{desvío muestral}$ (o desvío estándar muestral), que denotaremos $S$ se calcula como raíz de la varianza muestral $S^2$.
+
+$$S^2= \frac{\sum_{i=1}^n (x_i-\overline{x}_n)^2}{n-1}, \quad S=\sqrt{S^2}$$
+En R tenemos el comando $\texttt{sd}$.
+
+
+La $\textbf{distancia intercuartil}$ es la diferencia entre el cuartil superior y el cuartil inferior.
+
+En R tenemos el comando $\texttt{IQR}$.
+
+La $\textbf{MAD}$ o $\textbf{mediana de los desvíos absolutos}$ es la mediana de las distancias de cada dato a la mediana. Es decir,
+
+$$MAD=mediana_{i \in \{1,...,n\}}(|x_i-\tilde{x}_n|)$$
+
+En R tenemos el comando $\texttt{mad}$.
+
+
+Para comparar medidas de dispersión de un conjunto de datos que se sabe (o se puede asumir que) proviene de una distribución normal, dividir a la MAD por $0,674$ y a la distancia intercuartil por $1,349$. El comando $\texttt{mad}$ de R ya considera esta "corrección".
+
