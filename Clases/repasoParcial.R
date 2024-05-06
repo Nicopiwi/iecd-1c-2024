@@ -122,3 +122,5 @@ estim_ecm_t2 <- ecm_estimate(T2_obs, (1/lambda^2))
 
 # Empíricamente, T1 ha obtenido un error cuadrático medio menor. Esto puede tener sentido
 # ya que T1 se construye con más información acerca de la muestra exponencial, que T2.
+
+sample_datos<-scan(file = "./datos.txt")
