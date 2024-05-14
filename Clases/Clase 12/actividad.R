@@ -30,3 +30,6 @@ alpha <- 0.05
 z <- qnorm(1-alpha/2) 
 ic_bootstrap_median <- c(sample_median - z*sd(medians), sample_median + z*sd(medians))
 ic_bootstrap_mean <- c(sample_mean - z*sd(means), sample_mean + z*sd(means))
+
+plot(kde_means)
+plot(kde_medians)
