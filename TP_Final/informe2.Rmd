@@ -291,7 +291,7 @@ plot(X, Y,
      ylab = "Longitud del glúteo a la rodilla (mm)"
 )
 
-x <- seq(min(X), max(X), length.out = 1000)
+x <- seq(min(X), max(X), length.out = 2*length(X))
 smooth_nw_opt <- nwsmooth(x, X, Y, optimal_bandwidth_nw)
 lines(x, smooth_nw_opt$m, col = "green", lwd = 3, lty = 3)
 legend("topright", legend = sprintf("Bandwidth %s NW", optimal_bandwidth_nw), 
@@ -340,6 +340,36 @@ cat("R^2 NW", calcular_r2(Y, smooth_nw_opt$m))
 ```{r}
 cat("R^2 ksmooth", calcular_r2(sort(Y), smooth_opt$y))
 ```
-El método que mejor score R^2 tuvo es el enfoque no paramétrico con el estimador de Nadaraya Watson implementado manualmente. Sin embargo, hay que tener en consideración las observaciones previas.
+El método que mejor score R^2 tuvo es el enfoque no paramétrico con el estimador de Nadaraya Watson implementado manualmente. Por lo tanto, es el que mejor explica la variación en los datos. Sin embargo, hay que tener en consideración las observaciones previas.
 
 ### Inciso d)
+
+Implementaremos dicho predictor basándonos en las cuentas que se encuentran en Loader (2004, p. 4-5). 
+
+```{r}
+
+# linearsmooth <- function(x, X, Y, h){
+#   K <- function(u) dnorm(u)
+#   n <- length(X)
+#   m <- numeric(length(x))
+#   weights_matrix <- matrix(nrow = length(x), ncol = n)
+  
+#   for (i in 1:n) {
+#     weights_matrix[i, ] <- K((X - X[i]) / h)
+#     weights_matrix[i, ] <- weights_matrix[i, ] / sum(weights_matrix[i, ])
+#   }
+  
+#   for (i in 1:length(x)) {
+#     X_design <- cbind(rep(1, n), X - x[i])
+#     M1 <- solve(t(X_design) %*% weights_matrix %*% X_design)
+#     M2 <- t(X_design) %*% weights_matrix
+#     coefs <- M1 %*% M2 %*% Y
+    
+#     m[i] <- coefs[1]
+#   }
+  
+#   return(m)
+# }
+
+# linearsmooth(X, X, Y, optimal_bandwidth_nw)
+```
