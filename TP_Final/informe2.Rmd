@@ -1,5 +1,6 @@
 ---
 title: "Trabajo Práctico Final"
+subtitle: "Introducción a la Estadística y la Ciencia de Datos, 1er Cuatrimeste 2024"
 author: "Alan Erdei, Nicolás Ian Rozenberg"
 date: "`r Sys.Date()`"
 output:
@@ -15,7 +16,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Inciso a)
 
-Demostraremos que el predictor derivado del estimador de Nadaraya-Watson es una transformación aplicada sobre $Y$.
+Demostraremos que el predictor derivado del estimador de Nadaraya-Watson de la esperanza condicional \[\boldsymbol{\hat{Y}} = \begin{pmatrix}
+\hat{Y_{1}} & \hat{Y_{2}} & \cdots & \hat{Y_{n}}
+\end{pmatrix}^T \] donde  $$ \hat{Y_{i}} = E(Y \vert X = X_i) = \hat{m_h}(X_i)$$ es una transformación aplicada sobre $\textbf{Y}$.
 
 $$ \hat{Y_{i}} = \hat{m_h}(X_i) = \sum_{j=1}^n y_j w_{j, h}(X_i)$$
 $$ = \begin{pmatrix}
@@ -57,5 +60,8 @@ Por lo tanto
   \end{pmatrix}
 }_{Y}
 \]
+
+Entonces obtuvimos una transformación lineal en $\textbf{Y}$, como se quería ver.
+$\blacksquare$
 
 ## Sección Práctica
