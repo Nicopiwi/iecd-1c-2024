@@ -1,0 +1,61 @@
+---
+title: "Trabajo Práctico Final"
+author: "Alan Erdei, Nicolás Ian Rozenberg"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Sección Teórica
+
+### Inciso a)
+
+Demostraremos que el predictor derivado del estimador de Nadaraya-Watson es una transformación aplicada sobre $Y$.
+
+$$ \hat{Y_{i}} = \hat{m_h}(X_i) = \sum_{j=1}^n y_j w_{j, h}(X_i)$$
+$$ = \begin{pmatrix}
+w_{1, h}(X_i) & w_{2, h}(X_i) & \cdots & w_{n, h}(X_i)
+\end{pmatrix} \begin{pmatrix}
+Y_1 \\
+Y_2 \\
+\vdots \\
+Y_n
+\end{pmatrix} $$
+
+
+Por lo tanto
+
+\[
+\underbrace{
+  \begin{pmatrix}
+  \hat{Y_1} \\
+  \hat{Y_2} \\
+  \vdots \\
+  \hat{Y_n}
+  \end{pmatrix}
+}_{\hat{Y}}
+=
+\underbrace{
+  \begin{pmatrix}
+  w_{1, h}(X_1) & w_{2, h}(X_1) & \cdots & w_{n, h}(X_1) \\
+  w_{1, h}(X_2) & w_{2, h}(X_2) & \cdots & w_{n, h}(X_2) \\
+  \vdots & \vdots & \ddots & \vdots \\
+  w_{1, h}(X_n) & w_{2, h}(X_n) & \cdots & w_{n, h}(X_n)
+  \end{pmatrix}
+}_{S}
+\underbrace{
+  \begin{pmatrix}
+  Y_1 \\
+  Y_2 \\
+  \vdots \\
+  Y_n
+  \end{pmatrix}
+}_{Y}
+\]
+
+## Sección Práctica
