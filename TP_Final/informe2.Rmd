@@ -10,9 +10,10 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+rm(list=ls())
 ```
 
-## Sección Teórica
+## 1. Sección Teórica
 
 ### Inciso a)
 
@@ -41,7 +42,7 @@ Por lo tanto
   \vdots \\
   \hat{Y_n}
   \end{pmatrix}
-}_{\hat{Y}}
+}_{\boldsymbol{\hat{Y}}}
 =
 \underbrace{
   \begin{pmatrix}
@@ -58,10 +59,100 @@ Por lo tanto
   \vdots \\
   Y_n
   \end{pmatrix}
-}_{Y}
+}_{\textbf{Y}}
 \]
 
 Entonces obtuvimos una transformación lineal en $\textbf{Y}$, como se quería ver.
 $\blacksquare$
 
-## Sección Práctica
+## 2. Sección Práctica
+
+### Inciso a)
+
+Cargamos los datos
+
+```{r, message=FALSE}
+datos <- read.csv("individuals.csv", sep=";")
+attach(datos)
+```
+
+Primer gráfico de dispersión de Circunferencia de la cadera (HIP.CIRCUMFERENCE) (eje x) vs. Longitud del glúteo a la rodilla (BUTTOCK.KNEE.LENGTH) (eje y)
+
+```{r}
+plot(
+  HIP.CIRCUMFERENCE, BUTTOCK.KNEE.LENGTH,
+  main = "Gráfico de dispersión",
+  xlab = "Circunferencia de la cadera (mm)", 
+  ylab = "Longitud del glúteo a la rodilla (mm)"
+)
+```
+
+Se pueden observar puntos donde o bien la primera variable es 0, o bien la segunda lo es. Podemos interpretar que se desconoce el valor. Graficamos las mismas variables quitando dichos puntos.
+
+```{r}
+plot(HIP.CIRCUMFERENCE[HIP.CIRCUMFERENCE != 0 & BUTTOCK.KNEE.LENGTH != 0],
+     BUTTOCK.KNEE.LENGTH[HIP.CIRCUMFERENCE != 0 & BUTTOCK.KNEE.LENGTH != 0],
+     main = "Gráfico de dispersión",
+     xlab = "Circunferencia de la cadera (mm)",
+     ylab = "Longitud del glúteo a la rodilla (mm)"
+)
+```
+Este gráfico sugiere una correlación positiva entre la circunferencia de la cadera y la longitud del glúteo a la rodilla.
+
+
+## Inciso b
+
+Obtenemos la población femenina
+
+```{r}
+poblacion_femenina <- datos[SEX == 2, ]
+
+poblacion_femenina <- poblacion_femenina[
+  poblacion_femenina$HIP.CIRCUMFERENCE != 0 & poblacion_femenina$BUTTOCK.KNEE.LENGTH != 0,
+  ]
+```
+
+Separamos a la población femenina en grupos de acuerdo al cuartil, y calculamos intervalo de confianza bootstrap de nivel aproximado 0.95. Para cada grupo, generamos un número (`n_bootstrap`, 1000) de muestras bootstrap. Cada muestra bootstrap se obtiene al seleccionar observaciones aleatoriamente con reemplazo del conjunto de datos original del grupo. Esto significa que algunas observaciones pueden ser seleccionadas más de una vez mientras que otras pueden no ser seleccionadas en absoluto. Para cada una de estas muestras bootstrap, calculamos la mediana de `HIP.CIRCUMFERENCE`, y el intervalo de confianza normal. Esto se hizo ordenando las medianas bootstrap y seleccionando los percentiles correspondientes al 2.5% y al 97.5% para un intervalo de confianza del 95%. Estos percentiles representan los límites inferior y superior del intervalo de confianza.
+
+```{r}
+quartiles <- quantile(poblacion_femenina$AGE.IN.MONTHS, probs = c(0.25, 0.5, 0.75))
+poblacion_femenina$group <- cut(poblacion_femenina$AGE.IN.MONTHS, breaks = c(-Inf, quartiles, Inf), labels = c("Q1", "Q2", "Q3", "Q4"))
+
+ic_bootstrap <- function(data, n_bootstrap = 1000, conf_level = 0.95) {
+  medians <- c()
+  
+  for (i in 1:n_bootstrap){
+    medians <- c(medians, median(sample(data, replace = TRUE)))
+  }
+
+  lower_bound <- quantile(medians, (1 - conf_level) / 2)
+  upper_bound <- quantile(medians, 1 - (1 - conf_level) / 2)
+  list(median = median(data), lower = lower_bound, upper = upper_bound)
+}
+
+results <- lapply(split(poblacion_femenina$HIP.CIRCUMFERENCE, poblacion_femenina$group), ic_bootstrap)
+
+for (i in 1:4) {
+  cat("Grupo", names(results)[i], "\n")
+  cat("Mediana:", results[[i]]$median, "\n")
+  cat("Intervalo de confianza:", results[[i]]$lower, "-", results[[i]]$upper, "\n\n")
+}
+
+```
+
+Graficamos los resultados
+
+```{r}
+groups <- names(results)
+
+medians <- sapply(results, function(x) x$median)
+lower_bounds <- sapply(results, function(x) x$lower)
+upper_bounds <- sapply(results, function(x) x$upper)
+
+plot(1:4, results$medians, ylim = range(c(lower_bounds, upper_bounds)), xaxt = "n",
+     xlab = "Grupo Etario", ylab = "Mediana de Circunferencia de Cadera (mm)",
+     main = "Medianas de Circunferencia de Cadera por Grupos Etarios")
+axis(1, at = 1:4, labels = groups)
+arrows(1:4, lower_bounds, 1:4, upper_bounds, angle = 90, code = 3, length = 0.1)
+points(1:4, medians, pch = 19)
+```
