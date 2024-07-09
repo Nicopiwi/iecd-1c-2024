@@ -228,6 +228,9 @@ nwsmooth <- function(x, X, Y, h) {
   K <- function(u) dnorm(u)
   n <- length(X)
   m <- numeric(length(x))
+  
+  # Si x == X, weights_matrix corresponde a la matriz asociada con 
+  # la transformación lineal de Nadaraya-Watson
   weights_matrix <- matrix(nrow = length(x), ncol = n)
   
   for (i in 1:length(x)) {
@@ -347,29 +350,39 @@ El método que mejor score R^2 tuvo es el enfoque no paramétrico con el estimad
 Implementaremos dicho predictor basándonos en las cuentas que se encuentran en Loader (2004, p. 4-5). 
 
 ```{r}
-
-# linearsmooth <- function(x, X, Y, h){
-#   K <- function(u) dnorm(u)
-#   n <- length(X)
-#   m <- numeric(length(x))
-#   weights_matrix <- matrix(nrow = length(x), ncol = n)
+linearsmooth <- function(x, X, Y, h){
+  K <- function(u) dnorm(u)
+  n <- length(X)
+  m <- numeric(length(x))
   
-#   for (i in 1:n) {
-#     weights_matrix[i, ] <- K((X - X[i]) / h)
-#     weights_matrix[i, ] <- weights_matrix[i, ] / sum(weights_matrix[i, ])
-#   }
+  weights_matrix <- matrix(nrow = n, ncol = n)
   
-#   for (i in 1:length(x)) {
-#     X_design <- cbind(rep(1, n), X - x[i])
-#     M1 <- solve(t(X_design) %*% weights_matrix %*% X_design)
-#     M2 <- t(X_design) %*% weights_matrix
-#     coefs <- M1 %*% M2 %*% Y
+  for (i in 1:n) {
+    weights_matrix[i, ] <- K((X - X[i]) / h)
+    weights_matrix[i, ] <- weights_matrix[i, ] / sum(weights_matrix[i, ])
+  }
+  
+  for (i in 1:length(x)) {
+    X_design <- cbind(rep(1, n), X - x[i])
+    M1 <- solve(t(X_design) %*% weights_matrix %*% X_design)
+    M2 <- t(X_design) %*% weights_matrix
+    coefs <- M1 %*% M2 %*% Y
     
-#     m[i] <- coefs[1]
-#   }
+    m[i] <- coefs[1]
+  }
   
-#   return(m)
-# }
+  return(m)
+}
 
-# linearsmooth(X, X, Y, optimal_bandwidth_nw)
+Y_pred <- linearsmooth(seq(min(X), max(X), length.out=500), X, Y, 13)
+```
+
+```{r}
+plot(X, Y,
+     main = "Gráfico de dispersión integrando regresión no paramétrica nwsmooth",
+     xlab = "Circunferencia de la cadera (mm)",
+     ylab = "Longitud del glúteo a la rodilla (mm)"
+)
+
+lines(seq(min(X), max(X), length.out=500), Y_pred, col = "blue", lwd = 3, lty = 3)
 ```
