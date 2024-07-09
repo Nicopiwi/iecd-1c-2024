@@ -17,9 +17,9 @@ rm(list=ls())
 
 ### Inciso a)
 
-Demostraremos que el predictor derivado del estimador de Nadaraya-Watson de la esperanza condicional \[\boldsymbol{\hat{Y}} = \begin{pmatrix}
+Demostraremos que el predictor derivado del estimador de Nadaraya-Watson de la esperanza condicional E($Y$ | $X$ = $X_i$), de la forma \[\boldsymbol{\hat{Y}} = \begin{pmatrix}
 \hat{Y_{1}} & \hat{Y_{2}} & \cdots & \hat{Y_{n}}
-\end{pmatrix}^T \] donde  $$ \hat{Y_{i}} = E(Y \vert X = X_i) = \hat{m_h}(X_i)$$ es una transformación aplicada sobre $\textbf{Y}$.
+\end{pmatrix}^T \] donde  $$ \hat{Y_{i}} = \hat{m_h}(X_i)$$ es una transformación aplicada sobre $\textbf{Y}$.
 
 $$ \hat{Y_{i}} = \hat{m_h}(X_i) = \sum_{j=1}^n y_j w_{j, h}(X_i)$$
 $$ = \begin{pmatrix}
@@ -351,6 +351,11 @@ Implementaremos dicho predictor basándonos en las cuentas que se encuentran en 
 
 ```{r}
 linearsmooth <- function(x, X, Y, h){
+  #' x: vector de valores en los que se evaluará el predictor
+  #' X: vector de valores de la variable independiente
+  #' Y: vector de valores de la variable dependiente
+  #' h: ancho de la ventana
+
   K <- function(u) dnorm(u)
   n <- length(X)
   m <- numeric(length(x))
@@ -379,7 +384,7 @@ Y_pred <- linearsmooth(seq(min(X), max(X), length.out=500), X, Y, 13)
 
 ```{r}
 plot(X, Y,
-     main = "Gráfico de dispersión integrando regresión no paramétrica nwsmooth",
+     main = "Gráfico de dispersión integrando regresión no paramétrica linearsmooth",
      xlab = "Circunferencia de la cadera (mm)",
      ylab = "Longitud del glúteo a la rodilla (mm)"
 )
