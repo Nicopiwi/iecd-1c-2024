@@ -419,4 +419,5 @@ legend("bottomright", legend = c("Nadaraya-Watson Óptimo", "linsmooth"),
        col = c("blue", "red"), lty = c(2, 3), lwd = 2)
 
 ```
-
+Por lo que puede verse, el estimador de Nadaraya-Watson parece ajustar mejor a los datos, salvo para cirumferencias de cadera grandes (>1000) y femures largos(>520). En estos rangos, en donde esperariamos ver una correlacion positiva entre ambas estas variables, vemos sin embargo un comportamiento extraño de Nadaraya_Watson, con subidas y bajadas, que no es lo que uno esperaria ver dados todos los demas datos. Creemos que este comportamiento es simplemente un sobreajuste de N-W debido a la falta de datos en esos rangos.
+Por el contrario, el ajuste lineal pierde un poco la flexibilidad de N-W, sin embaego esta rigidez solo provoca que sobreestime la longitud de los femures en el rango de cirumferencias de cadera muy pequeñas, pero aun asi conserva un ajuste, al menos a la vista, bastante bueno. Ademas, al ser lineal, no muestra el comportamiento erratico de N-W en valores grandes de las variables (partr de arriba a la derecha del grafico), y su rigidez permite no sobreajustar, y mostrar una tendencia razonable aun en esta region donde los datos son escazos.
