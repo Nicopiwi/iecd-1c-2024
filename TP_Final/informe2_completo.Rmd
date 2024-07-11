@@ -15,13 +15,13 @@ rm(list=ls())
 
 ## 1. Sección Teórica
 
-### Inciso a)
+### (a)
 
-Demostraremos que el predictor derivado del estimador de Nadaraya-Watson de la esperanza condicional E($Y$ | $X$ = $X_i$), de la forma \[\boldsymbol{\hat{Y}} = \begin{pmatrix}
+Demostraremos que el predictor derivado del estimador de Nadaraya-Watson de la esperanza condicional $Y_i$ = E($Y$ | $X$ = $X_i$), 1 $\leq$ i $\leq$ n de la forma \[\boldsymbol{\hat{Y}} = \begin{pmatrix}
 \hat{Y_{1}} & \hat{Y_{2}} & \cdots & \hat{Y_{n}}
 \end{pmatrix}^T \] donde  $$ \hat{Y_{i}} = \hat{m_h}(X_i)$$ es una transformación aplicada sobre $\textbf{Y}$.
 
-$$ \hat{Y_{i}} = \hat{m_h}(X_i) = \sum_{j=1}^n y_j w_{j, h}(X_i)$$
+$$ \hat{Y_{i}} = \hat{m_h}(X_i) = \sum_{j=1}^n Y_j w_{j, h}(X_i)$$
 $$ = \begin{pmatrix}
 w_{1, h}(X_i) & w_{2, h}(X_i) & \cdots & w_{n, h}(X_i)
 \end{pmatrix} \begin{pmatrix}
@@ -67,14 +67,13 @@ $\blacksquare$
 
 ## 2. Sección Práctica
 
-### Inciso a)
+### (a)
 
 Cargamos los datos
 
 ```{r, message=FALSE}
 datos <- read.csv("individuals.csv", sep=";")
-attach(datos)
-poblacion_femenina <- datos[SEX == 2,]
+poblacion_femenina <- datos[datos$SEX == 2,]
 attach(poblacion_femenina)
 ```
 
@@ -101,22 +100,23 @@ plot(HIP.CIRCUMFERENCE[HIP.CIRCUMFERENCE != 0 & BUTTOCK.KNEE.LENGTH != 0],
 ```
 Este gráfico sugiere una correlación positiva entre la circunferencia de la cadera y la longitud del femur.
 
+Eliminamos los datos que posean 0 en estas columnas.
 
-## Inciso b
-
-
-```{r}
+```{r, message=FALSE}
 poblacion_femenina <- poblacion_femenina[
-  poblacion_femenina$HIP.CIRCUMFERENCE != 0 & poblacion_femenina$BUTTOCK.KNEE.LENGTH != 0,
-  ]
+  HIP.CIRCUMFERENCE != 0 & BUTTOCK.KNEE.LENGTH != 0,
+]
+attach(poblacion_femenina)
 ```
 
-Separamos a la población femenina en grupos etario de acuerdo al cuartil, y calculamos intervalo de confianza bootstrap de nivel aproximado 0.95. Para cada grupo, generamos un número (`n_bootstrap`, 1000) de muestras bootstrap. Cada muestra bootstrap se obtiene al seleccionar observaciones aleatoriamente con reemplazo del conjunto de datos original del grupo. Esto significa que algunas observaciones pueden ser seleccionadas más de una vez mientras que otras pueden no ser seleccionadas en absoluto. Para cada una de estas muestras bootstrap, calculamos la mediana de `HIP.CIRCUMFERENCE`, y el intervalo de confianza normal. Esto se hizo ordenando las medianas bootstrap y seleccionando los percentiles correspondientes al 2.5% y al 97.5% para un intervalo de confianza del 95%. Estos percentiles representan los límites inferior y superior del intervalo de confianza.
+### (b)
+
+Separamos a la población femenina en grupos etarios de acuerdo al cuartil, y calculamos intervalo de confianza bootstrap de nivel aproximado 0.95. Para cada grupo, generamos un número (`n_bootstrap`, 1000) de muestras bootstrap. Cada muestra bootstrap se obtiene al seleccionar observaciones aleatoriamente con reemplazo del conjunto de datos original del grupo. Esto significa que algunas observaciones pueden ser seleccionadas más de una vez mientras que otras pueden no ser seleccionadas en absoluto. Para cada una de estas muestras bootstrap, calculamos la mediana de `HIP.CIRCUMFERENCE`, y el intervalo de confianza normal. Esto se hizo ordenando las medianas bootstrap y seleccionando los percentiles correspondientes al 2.5% y al 97.5% para un intervalo de confianza del 95%. Estos percentiles representan los límites inferior y superior del intervalo de confianza.
 
 ```{r}
 quartiles <- quantile(poblacion_femenina$AGE.IN.MONTHS, probs = c(0.25, 0.5, 0.75))
 poblacion_femenina$group <- cut(
-  poblacion_femenina$AGE.IN.MONTHS, 
+  AGE.IN.MONTHS, 
   breaks = c(-Inf, quartiles, Inf), 
   labels = c("Q1", "Q2", "Q3", "Q4")
 )
@@ -134,7 +134,7 @@ ic_bootstrap <- function(data, n_bootstrap = 1000, conf_level = 0.95) {
 }
 
 results <- lapply(
-  split(poblacion_femenina$HIP.CIRCUMFERENCE, poblacion_femenina$group), ic_bootstrap
+  split(HIP.CIRCUMFERENCE, poblacion_femenina$group), ic_bootstrap
 )
 
 for (i in 1:4) {
@@ -162,17 +162,13 @@ arrows(1:4, lower_bounds, 1:4, upper_bounds, angle = 90, code = 3, length = 0.1)
 points(1:4, medians, pch=20)
 ```
 
-### Inciso c)
+### (c)
 
 Agregamos las líneas de regresión al diagrama de dispersión original.
 
 ```{r}
-X <- HIP.CIRCUMFERENCE[
-  HIP.CIRCUMFERENCE != 0 & BUTTOCK.KNEE.LENGTH != 0
-]
-Y <- BUTTOCK.KNEE.LENGTH[
-  HIP.CIRCUMFERENCE != 0 & BUTTOCK.KNEE.LENGTH != 0
-]
+X <- HIP.CIRCUMFERENCE
+Y <- BUTTOCK.KNEE.LENGTH
 
 plot(X, Y,
      main = "Gráfico de dispersión integrando regresión no paramétrica",
@@ -296,7 +292,7 @@ plot(X, Y,
 x <- seq(min(X), max(X), length.out = 2*length(X))
 smooth_nw_opt <- nwsmooth(x, X, Y, optimal_bandwidth_nw)
 lines(x, smooth_nw_opt$m, col = "green", lwd = 3, lty = 3)
-legend("topright", legend = sprintf("Bandwidth %s NW", optimal_bandwidth_nw), 
+legend("bottomright", legend = sprintf("Bandwidth %s NW", optimal_bandwidth_nw), 
        col = "green", lty = 2, lwd = 2)
 ```
 
@@ -344,7 +340,7 @@ cat("R^2 ksmooth", calcular_r2(sort(Y), smooth_opt$y))
 ```
 El método que mejor score R^2 tuvo es el enfoque no paramétrico con el estimador de Nadaraya Watson implementado manualmente. Por lo tanto, es el que mejor explica la variación en los datos. Sin embargo, hay que tener en consideración las observaciones previas.
 
-### Inciso d)
+### (d)
 
 Implementaremos dicho predictor basándonos en las cuentas que se encuentran en Loader (2004, p. 4-5). 
 
@@ -378,7 +374,7 @@ linearsmooth <- function(x, X, Y, h){
   return(m)
 }
 
-Y_pred <- linearsmooth(seq(min(X), max(X), length.out=500), X, Y, 13)
+Y_pred <- linearsmooth(seq(min(X), max(X), length.out=500), X, Y, optimal_bandwidth_nw)
 ```
 
 ```{r}
@@ -408,16 +404,16 @@ Graficamos ahora el estimador de Nadaraya-Watson obtenida con la ventana optima 
 ```{r}
 smooth_nw_opt <- nwsmooth(x, X, Y, optimal_bandwidth_nw)
 plot(X, Y,
-     main = "Nadaraya-Watson vs linsmooth con h = 40",
+     main = "Nadaraya-Watson vs linearsmooth con h = 40",
      xlab = "Circunferencia de la cadera (mm)",
      ylab = "Longitud del glúteo a la rodilla (mm)"
 )
 
 lines(x, smooth_nw_opt$m, col = "blue", lwd = 3, lty = 3)
 lines(seq(min(X), max(X), length.out=500), Y_pred40, col = "red", lwd = 3, lty = 3)
-legend("bottomright", legend = c("Nadaraya-Watson Óptimo", "linsmooth"),
+legend("bottomright", legend = c("Nadaraya-Watson Óptimo", "Linearsmooth"),
        col = c("blue", "red"), lty = c(2, 3), lwd = 2)
 
 ```
-Por lo que puede verse, el estimador de Nadaraya-Watson parece ajustar mejor a los datos, salvo para cirumferencias de cadera grandes (>1000) y femures largos(>520). En estos rangos, en donde esperariamos ver una correlacion positiva entre ambas estas variables, vemos sin embargo un comportamiento extraño de Nadaraya_Watson, con subidas y bajadas, que no es lo que uno esperaria ver dados todos los demas datos. Creemos que este comportamiento es simplemente un sobreajuste de N-W debido a la falta de datos en esos rangos.
-Por el contrario, el ajuste lineal pierde un poco la flexibilidad de N-W, sin embaego esta rigidez solo provoca que sobreestime la longitud de los femures en el rango de cirumferencias de cadera muy pequeñas, pero aun asi conserva un ajuste, al menos a la vista, bastante bueno. Ademas, al ser lineal, no muestra el comportamiento erratico de N-W en valores grandes de las variables (partr de arriba a la derecha del grafico), y su rigidez permite no sobreajustar, y mostrar una tendencia razonable aun en esta region donde los datos son escazos.
+Por lo que puede verse, el estimador de Nadaraya-Watson parece ajustar mejor a los datos, salvo para circunferencias de cadera grandes (>1000 mm) y fémures largos(>520 mm). En estos rangos, en donde esperaríamos ver una correlacion positiva entre ambas estas variables, vemos sin embargo un comportamiento extraño de Nadaraya_Watson, con subidas y bajadas, que no es lo que uno esperaria ver dados todos los demas datos. Creemos que este comportamiento es simplemente un sobreajuste de N-W debido a la falta de datos en esos rangos.
+Por el contrario, el ajuste de regresión local lineal pierde un poco la flexibilidad de N-W. Sin embaego esta rigidez sólo provoca que sobreestime la longitud de los femures en el rango de cirumferencias de cadera muy pequeñas, pero aun asi conserva un ajuste, al menos a la vista, bastante bueno. Ademas, al ser lineal, no muestra el comportamiento errático de N-W en valores grandes de las variables (partr de arriba a la derecha del grafico), y su rigidez permite no sobreajustar, y mostrar una tendencia razonable aun en esta region donde los datos son escasos.
