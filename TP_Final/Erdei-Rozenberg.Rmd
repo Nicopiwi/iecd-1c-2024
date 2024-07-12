@@ -1,6 +1,6 @@
 ---
 title: "Trabajo Práctico Final"
-subtitle: "Introducción a la Estadística y la Ciencia de Datos, 1er Cuatrimeste 2024"
+subtitle: "Introducción a la Estadística y la Ciencia de Datos, 1er Cuatrimeste 2024. Universidad de Buenos Aires"
 author: "Alan Erdei, Nicolás Ian Rozenberg"
 date: "`r Sys.Date()`"
 output:
@@ -17,7 +17,7 @@ rm(list=ls())
 
 ### (a)
 
-Demostraremos que el predictor derivado del estimador de Nadaraya-Watson de la esperanza condicional $Y_i$ = E($Y$ | $X$ = $X_i$), 1 $\leq$ i $\leq$ n de la forma \[\boldsymbol{\hat{Y}} = \begin{pmatrix}
+Demostraremos que el predictor derivado del estimador de Nadaraya-Watson de la esperanza condicional $$\hat{Y_i} = \widehat{E(Y | X = X_i)}$$, 1 $\leq$ i $\leq$ n de la forma \[\boldsymbol{\hat{Y}} = \begin{pmatrix}
 \hat{Y_{1}} & \hat{Y_{2}} & \cdots & \hat{Y_{n}}
 \end{pmatrix}^T \] donde  $$ \hat{Y_{i}} = \hat{m_h}(X_i)$$ es una transformación aplicada sobre $\textbf{Y}$.
 
@@ -64,6 +64,86 @@ Por lo tanto
 
 Entonces obtuvimos una transformación lineal en $\textbf{Y}$, como se quería ver.
 $\blacksquare$
+
+### (b)
+
+El metodo de validación cruzada tiene como función objetivo a:
+
+$$ CV(h) = \frac{1}{n}\sum_{i=1}^n (Y_i - \widehat{m_h}^{-i}(X_i))^2 $$
+
+para la minimizacion en $h$, donde el estimador $\widehat{m_h}^{-i}(.)$ se computa de la siguiente manera:
+
+$$ \widehat{m_h}^{-i}(x) =  \sum_{j=1, j \neq i}^n Y_j \frac{g_j(x)}{\sum\limits_{t=1,t\neq i}^n g_t(x)}$$
+
+Donde, para mayor legibilidad en las cuentas que vendran, escribimos $$ g_j(x) = K \left( \frac{X_j - x}{h}\right)$$
+
+Notar que el estimador $\widehat{m_h}^{-i}(.)$ se computa como en la igualdad (1) del enunciado, pero sin la i-esima observacion, $(X_i, Y_i)$. En todo lo que sigue, tomaremos un $i \leq n$ fijo. Dado que este $i$ es arbitrario, lo siguiente que probaremos sera valido para la validacion cruzada sacando cualquiera de las observaciones.
+
+Queremos probar la igualdad (2):
+
+$$\widehat{m_h}^{-i}(X_i) = \frac{\widehat{m_h}(X_i) - Y_i w_{i,h}(X_i)}{1 - w_{i,h}(X_i)}$$
+
+Donde, en concordancia con la notacion del enunciado, llamamos:
+$$w_{i,h}(x) = \frac{g_i(x)}{\sum\limits_{t=1}^n g_t(x)}$$
+
+Para probar (2), notemos que tenemos a $\widehat{m_h}^{-i}(x)$ escrito como una sumatoria sobre $j = 1, 2, .., n$ con $j\neq i$. Estamos sumando $Y_j$ mutiplicado por una fraccion, analizamos esa fraccion:
+
+$$
+\frac{g_j(x)}{\sum\limits_{t=1,t\neq i}^n g_t(x)} = \frac{g_j(x)}{ -g_i(x) +\sum\limits_{t=1}^n g_t(x)}
+$$
+
+Multiplicamos por un $1$ convenientemente escrito. Es decir, $\sum\limits_{t=1}^n g_t(x)$ sobre si mismo:
+
+$$
+\frac{g_j(x)}{ -g_i(x) +\sum\limits_{t=1}^n g_t(x)} =  \frac{g_j(x)}{\sum\limits_{t=1}^n g_t(x)} * \frac{\sum\limits_{t=1}^n g_t(x)}{ -g_i(x) +\sum\limits_{t=1}^n g_t(x)} = w_{j,h}(x) * \frac{\sum\limits_{t=1}^n g_t(x)}{ -g_i(x) +\sum\limits_{t=1}^n g_t(x)}$$
+
+Notar que el segundo multiplicando no depende de $j$. Reescribamos a este multiplicando con una expresion mas amigable:
+
+$$\frac{\sum\limits_{t=1}^n g_t(x)}{ -g_i(x) +\sum\limits_{t=1}^n g_t(x)} = \left( \frac{ -g_i(x) +\sum\limits_{t=1}^n g_t(x)}{\sum\limits_{t=1}^n g_t(x)}\right)^{-1} = \left( -\frac{g_i(x)}{\sum\limits_{t=1}^n g_t(x)} + \frac{\sum\limits_{t=1}^n g_t(x)}{\sum\limits_{t=1}^n g_t(x)} \right)^{-1} = \left( -w_{i,h}(x) + 1 \right)^{-1}$$
+
+
+Ahora si, con esta informacion, podemos reescribir a $\widehat{m_h}^{-i}(.)$ como:
+
+$$
+\widehat{m_h}^{-i}(x) =  \sum_{j=1, j \neq i}^n Y_j \frac{g_j(x)}{\sum\limits_{t=1,t\neq i}^n g_t(x)} = \sum_{j=1, j \neq i}^n Y_j \frac{w_{j,h}(x)}{1-w_{i,h}(x)}$$
+
+Sacamos convenientemente el divisor de la fraccion, que no depende de $j$, de la sumatoria:
+
+$$\widehat{m_h}^{-i}(x) = \frac{1}{1-w_{i,h}(x)} \sum_{j=1, j \neq i}^n Y_j *w_{j,h}(x)$$
+
+Sabiendo que $\widehat{m_h}(x) = \sum_{j=1}^n Y_j *w_{j,h}(x)$, podemos reescribir la sumatoria de arriba como $$\widehat{m_h}(x) - Y_i*w_{i,h}(x) = \sum_{j=1, j\neq i}^n Y_j *w_{j,h}(x)$$
+
+Finalmente, juntando todo lo recien visto y evaluando $\widehat{m_h}^{-i}(x)$ en $X_i$, probamos la igualdad (2)
+
+$$\widehat{m_h}^{-i}(X_i) = \frac{\widehat{m_h}(X_i) - Y_i*w_{i,h}(X_i)}{1-w_{i,h}(X_i)}$$
+
+Para probar la igualdad (3), que establece que
+$$
+CV(h) = \frac{1}{n}\sum_{i=1}^n \frac{(Y_i - \widehat{m_h}(X_i))^2 }{(1-w_{i,h}(X_i))^2}
+$$
+reemplazaremos lo obtenido en (2) en la definicion de $CV(h)$ que enunciamos al principio.
+
+$$
+CV(h) = \frac{1}{n}\sum_{i=1}^n (Y_i - \widehat{m_h}^{-i}(X_i))^2 = 
+$$
+$$
+= \frac{1}{n}\sum_{i=1}^n \left(Y_i - \frac{\widehat{m_h}(X_i) - Y_i*w_{i,h}(X_i)}{1-w_{i,h}(X_i)}\right)^2 
+$$
+$$
+= \frac{1}{n}\sum_{i=1}^n \left(\frac{Y_i * (1 - w_{i,h}(X_i))}{1 - w_{i,h}(X_i)} - \frac{\widehat{m_h}(X_i) - Y_i*w_{i,h}(X_i)}{1-w_{i,h}(X_i)}\right)^2
+$$
+$$
+= \frac{1}{n}\sum_{i=1}^n \left(\frac{Y_i - Y_i  *  w_{i,h}(X_i))}{1 - w_{i,h}(X_i)} - \frac{\widehat{m_h}(X_i) - Y_i*w_{i,h}(X_i)}{1-w_{i,h}(X_i)}\right)^2
+$$
+$$
+= \frac{1}{n}\sum_{i=1}^n \left(\frac{Y_i - Y_i  *  w_{i,h}(X_i)) - \widehat{m_h}(X_i) + Y_i*w_{i,h}(X_i)}{1 - w_{i,h}(X_i)}\right)^2
+$$
+$$
+= \frac{1}{n}\sum_{i=1}^n \left(\frac{Y_i - \widehat{m_h}(X_i)}{1 - w_{i,h}(X_i)}\right)^2
+$$
+Que es lo que queriamos probar. $\blacksquare$
+
+\pagebreak
 
 ## 2. Sección Práctica
 
@@ -171,7 +251,7 @@ X <- HIP.CIRCUMFERENCE
 Y <- BUTTOCK.KNEE.LENGTH
 
 plot(X, Y,
-     main = "Gráfico de dispersión integrando regresión no paramétrica",
+     main = "Gráfico de dispersión integrando regresión no paramétrica ksmooth",
      xlab = "Circunferencia de la cadera (mm)",
      ylab = "Longitud del glúteo a la rodilla (mm)"
 )
@@ -183,7 +263,8 @@ lines(smooth_50, col = "green", lwd = 3, lty = 3)
 legend("bottomright", legend = c("Bandwidth 100", "Bandwidth 50"), 
        col = c("blue", "green"), lty = c(2, 3), lwd = 2)
 ```
-
+Observando el gráfico es difícil de determinar cuál de las dos ventanas usaríamos.
+La ventana de 50 ajusta mejor que la ventana de 100 para los datos de circunferencia de cadera más pequeños. Sin embargo, varía más para los datos más altos, por lo que perdería estabilidad si nos interesa predecir valores altos.
 Ahora aplicamos validación cruzada Leave One Out para ksmooth. Por ahora no aplicamos el criterio demostrado en el apartado teórico.
 
 ```{r}
@@ -238,7 +319,7 @@ nwsmooth <- function(x, X, Y, h) {
 }
 ```
 
-Y ahora realizamos validación cruzada. Ahora sí, utilizando el criterio del apartado teórico.
+Y ahora realizamos validación cruzada leave-one-out. Ahora sí, utilizando el criterio del apartado teórico.
 
 ```{r}
 
@@ -266,7 +347,7 @@ plot(bandwidths, mse_values_nw, type = "b", main = "Búsqueda de Ventana Óptima
 abline(v = optimal_bandwidth_nw, col = "blue", lwd = 2, lty = 2)
 
 ```
-La función objetivo se ve distinta a cuando aplicamos ksmooth. Ahora el bandwidth óptimo es un extremo de la grilla. Crearemos una nueva grilla corrida hacia la izquierda, con ventanas que poseen valores que van de 1 a 20
+La función objetivo se ve distinta a cuando aplicamos `ksmooth`. Ahora la ventana óptima es un extremo de la grilla. Crearemos una nueva grilla corrida hacia la izquierda, con ventanas que poseen valores que van de 1 a 20
 
 ```{r}
 bandwidths_nw <- 1:20
@@ -342,10 +423,10 @@ El método que mejor score R^2 tuvo es el enfoque no paramétrico con el estimad
 
 ### (d)
 
-Implementaremos dicho predictor basándonos en las cuentas que se encuentran en Loader (2004, p. 4-5). 
+Implementaremos dicho predictor (regresión local lineal) basándonos en las cuentas que se encuentran en Loader (2004, p. 4-5). 
 
 ```{r}
-linearsmooth <- function(x, X, Y, h){
+linearsmooth <- function(x, X, Y, h) {
   #' x: vector de valores en los que se evaluará el predictor
   #' X: vector de valores de la variable independiente
   #' Y: vector de valores de la variable dependiente
@@ -355,24 +436,23 @@ linearsmooth <- function(x, X, Y, h){
   n <- length(X)
   m <- numeric(length(x))
   
-  weights_matrix <- matrix(nrow = n, ncol = n)
-  
-  for (i in 1:n) {
-    weights_matrix[i, ] <- K((X - X[i]) / h)
-    weights_matrix[i, ] <- weights_matrix[i, ] / sum(weights_matrix[i, ])
-  }
-  
   for (i in 1:length(x)) {
-    X_design <- cbind(rep(1, n), X - x[i])
-    M1 <- solve(t(X_design) %*% weights_matrix %*% X_design)
-    M2 <- t(X_design) %*% weights_matrix
-    coefs <- M1 %*% M2 %*% Y
+    weights <- K((X - x[i]) / h)
+    weights <- weights / sum(weights)  # Normalize weights
+    X_design <- cbind(1, X - x[i])
+    
+    W <- diag(weights)
+    XtW <- t(X_design) %*% W
+    M1 <- solve(XtW %*% X_design)
+    M2 <- XtW %*% Y
+    coefs <- M1 %*% M2
     
     m[i] <- coefs[1]
   }
   
   return(m)
 }
+
 
 Y_pred <- linearsmooth(seq(min(X), max(X), length.out=500), X, Y, optimal_bandwidth_nw)
 ```
@@ -384,9 +464,9 @@ plot(X, Y,
      ylab = "Longitud del glúteo a la rodilla (mm)"
 )
 
-lines(seq(min(X), max(X), length.out=500), Y_pred, col = "blue", lwd = 3, lty = 3)
+lines(seq(min(X), max(X), length.out=500), Y_pred, col = "blue", lwd = 3, lty = 2)
 ```
-Ahora aplicamos el estimador implementado recien, pero usando una ventana de h = 40
+Este gráfico sugiere que la ventana no es la mejor para `linearsmooth`. Esto se debe a que, en valores altos, donde hay menos datos, la curva sobreajusta. Ahora aplicamos el estimador implementado recién, pero usando una ventana de h = 40
 
 ```{r}
 h <- 40
@@ -401,19 +481,33 @@ lines(seq(min(X), max(X), length.out=500), Y_pred40, col = "red", lwd = 3, lty =
 
 ```
 Graficamos ahora el estimador de Nadaraya-Watson obtenida con la ventana optima del item (c)iii, en conjunto con el estimador del grafico de arriba:
+
 ```{r}
+x <- seq(min(X), max(X), length.out=500)
 smooth_nw_opt <- nwsmooth(x, X, Y, optimal_bandwidth_nw)
 plot(X, Y,
-     main = "Nadaraya-Watson vs linearsmooth con h = 40",
+     main = "Nadaraya-Watson vs linearsmooth con ventanas óptimas",
      xlab = "Circunferencia de la cadera (mm)",
      ylab = "Longitud del glúteo a la rodilla (mm)"
 )
 
-lines(x, smooth_nw_opt$m, col = "blue", lwd = 3, lty = 3)
+lines(x, smooth_nw_opt$m, col = "green", lwd = 3, lty = 3)
 lines(seq(min(X), max(X), length.out=500), Y_pred40, col = "red", lwd = 3, lty = 3)
 legend("bottomright", legend = c("Nadaraya-Watson Óptimo", "Linearsmooth"),
-       col = c("blue", "red"), lty = c(2, 3), lwd = 2)
+       col = c("green", "red"), lty = c(2, 3), lwd = 3)
 
 ```
-Por lo que puede verse, el estimador de Nadaraya-Watson parece ajustar mejor a los datos, salvo para circunferencias de cadera grandes (>1000 mm) y fémures largos(>520 mm). En estos rangos, en donde esperaríamos ver una correlacion positiva entre ambas estas variables, vemos sin embargo un comportamiento extraño de Nadaraya_Watson, con subidas y bajadas, que no es lo que uno esperaria ver dados todos los demas datos. Creemos que este comportamiento es simplemente un sobreajuste de N-W debido a la falta de datos en esos rangos.
-Por el contrario, el ajuste de regresión local lineal pierde un poco la flexibilidad de N-W. Sin embaego esta rigidez sólo provoca que sobreestime la longitud de los femures en el rango de cirumferencias de cadera muy pequeñas, pero aun asi conserva un ajuste, al menos a la vista, bastante bueno. Ademas, al ser lineal, no muestra el comportamiento errático de N-W en valores grandes de las variables (partr de arriba a la derecha del grafico), y su rigidez permite no sobreajustar, y mostrar una tendencia razonable aun en esta region donde los datos son escasos.
+Vemos que el predictor de `linearsmooth` con la ventana elegida parecería ser más robusto e incluso ajustar mejor que el estimador de Nadaraya-Watson. La robustez se puede observar claramente en los valores más altos. Y para los demás puntos, parecería estimar de manera más centrada en los puntos. Por lo tanto, para estos datos parecería ser un estimador menos sesgado.
+
+## Conclusión
+En este trabajo práctico se evaluó el ajuste de regresión no paramétrica para las variables circunferencia de cadera y longitud del glúteo a la cadera utilizando el estimador de Nadaraya-Watson y el comando ksmooth de R con diferentes parámetros de ventana. Además, se calcularon intervalos de confianza bootstrap para la mediana de la circunferencia de cadera para cada cuartil en la población femenina de acuerdo a la edad en meses.
+
+Inicialmente, se ajustaron dos regresiones no paramétricas con bandas de 100 y 50, mostrando diferencias en la suavidad del ajuste. Se implementó un código para la búsqueda de la ventana óptima utilizando validación cruzada leave-one-out, identificando así la mejor banda para el ajuste con ksmooth.
+
+Posteriormente, se implementó la función `nwsmooth` para el cálculo del estimador de Nadaraya-Watson y se repitió la búsqueda de la ventana óptima. Finalmente, se compararon los resultados obtenidos con ambas técnicas no paramétricas y se superpusieron sobre el ajuste paramétrico tradicional.
+
+Las comparaciones realizadas sugieren que el ajuste no paramétrico con la banda óptima proporciona un mejor ajuste a los datos en comparación con el ajuste paramétrico, capturando mejor las posibles no linealidades en la relación entre las variables. Sin embargo, la elección de la banda óptima es crucial para obtener un buen ajuste, y el método de validación cruzada se muestra como una herramienta efectiva para esta selección.
+
+Por último, se implementó un predictor basado en regresión local lineal, donde para una ventana óptima pudimos concluir una mayor robustez y menor sesgo para el conjunto de datos, que Nadaraya Watson.  
+
+Podríamos concluir que, para este conjunto de datos, los métodos de regresión no paramétrica con la selección adecuada de la banda pueden ofrecer ventajas significativas en términos de flexibilidad y precisión en el ajuste.
