@@ -264,7 +264,7 @@ smooth_50 <- ksmooth(X, Y, kernel = "normal", bandwidth = 50)
 lines(smooth_100, col = "blue", lwd = 3, lty = 2)
 lines(smooth_50, col = "green", lwd = 3, lty = 3)
 legend("bottomright", legend = c("Bandwidth 100", "Bandwidth 50"), 
-       col = c("blue", "green"), lty = c(2, 3), lwd = 2)
+       col = c("blue", "green"), lty = c(2, 3), lwd = 3)
 ```
 Observando el gráfico es difícil de determinar cuál de las dos ventanas usaríamos.
 La ventana de 50 ajusta mejor que la ventana de 100 para los datos de circunferencia de cadera más pequeños. Sin embargo, varía más para los datos más altos, por lo que perdería estabilidad si nos interesa predecir valores altos.
@@ -292,7 +292,7 @@ mse_values <- sapply(bandwidths, loo_mse)
 optimal_bandwidth <- bandwidths[which.min(mse_values)]
 plot(bandwidths, mse_values, type = "b", main = "Búsqueda de Ventana Óptima para ksmooth",
      xlab = "Bandwidth", ylab = "MSE (Leave-One-Out)")
-abline(v = optimal_bandwidth, col = "red", lwd = 2, lty = 2)
+abline(v = optimal_bandwidth, col = "red", lwd = 3, lty = 2)
 ```
 
 ```{r}
@@ -347,7 +347,7 @@ mse_values_nw <- sapply(bandwidths, loo_mse_nw)
 optimal_bandwidth_nw <- bandwidths[which.min(mse_values_nw)]
 plot(bandwidths, mse_values_nw, type = "b", main = "Búsqueda de Ventana Óptima para Nadaraya-Watson",
      xlab = "Bandwidth", ylab = "MSE (Leave-One-Out)")
-abline(v = optimal_bandwidth_nw, col = "blue", lwd = 2, lty = 2)
+abline(v = optimal_bandwidth_nw, col = "blue", lwd = 3, lty = 2)
 
 ```
 La función objetivo se ve distinta a cuando aplicamos `ksmooth`. Ahora la ventana óptima es un extremo de la grilla. Crearemos una nueva grilla corrida hacia la izquierda, con ventanas que poseen valores que van de 1 a 20
@@ -359,7 +359,7 @@ mse_values_nw <- sapply(bandwidths_nw, loo_mse_nw)
 optimal_bandwidth_nw <- bandwidths_nw[which.min(mse_values_nw)]
 plot(bandwidths_nw, mse_values_nw, type = "b", main = "Búsqueda de Ventana Óptima para Nadaraya-Watson",
      xlab = "Bandwidth", ylab = "MSE (Leave-One-Out)")
-abline(v = optimal_bandwidth_nw, col = "blue", lwd = 2, lty = 2)
+abline(v = optimal_bandwidth_nw, col = "blue", lwd = 3, lty = 2)
 ```
 Ahora el óptimo en nuestra grilla no se encuentra en un extremo, por lo que podemos quedarnos con dicho valor.
 
@@ -375,9 +375,9 @@ plot(X, Y,
 
 x <- seq(min(X), max(X), length.out = 2*length(X))
 smooth_nw_opt <- nwsmooth(x, X, Y, optimal_bandwidth_nw)
-lines(x, smooth_nw_opt$m, col = "green", lwd = 3, lty = 3)
+lines(x, smooth_nw_opt$m, col = "green", lwd = 3, lty = 2)
 legend("bottomright", legend = sprintf("Bandwidth %s NW", optimal_bandwidth_nw), 
-       col = "green", lty = 2, lwd = 2)
+       col = "green", lty = 2, lwd = 3)
 ```
 
 Ahora nos falta realizar un gráfico viendo cómo queda la regresión obtenida por cuadrados mínimos, y por las mejores ventanas tanto de `ksmooth` como de `nwsmooth` (iv)
@@ -397,9 +397,9 @@ lines(smooth_opt, col = "red", lwd = 3, lty = 2)
 lines(x, smooth_nw_opt$m, col = "blue", lwd = 3, lty = 3)
 abline(fit_lm, col = "green", lwd = 3, lty = 4)
 legend("bottomright", legend = c("ksmooth Óptimo", "Nadaraya-Watson Óptimo", "Mínimos Cuadrados"),
-       col = c("red", "blue", "green"), lty = c(2, 3, 4), lwd = 2)
+       col = c("red", "blue", "green"), lty = c(2, 3, 4), lwd = 3)
 ```
-Observamos que `ksmooth` y `nwsmooth` se comportan de forma prácticamente idéntica en sus ventanas óptimas. Sólo observando el gráfico, consideramos que no se puede determinar cuál de los dos enfoques preferiríamos. Considerando que existe cierto cambio en la correlación entre las dos variables en valores altos de circunferencia de la cadera, el modelo no paramétrico podría servir para predecir mejor dichas situaciones. Sin embargo, a medida que crece el valor de las variables, los datos se vuelven más escasos. Entonces la desventaja del enfoque no paramétrico es que necesita de una cantidad mayor de datos para ser estable que en el enfoque paramétrico dado por el modelo lineal. Calculemos los R^2 (coeficiente de determinación)
+Observamos que `ksmooth` y `nwsmooth` se comportan de forma prácticamente idéntica en sus ventanas óptimas, mientras que el ajuste lineal mediante cuadrados mínimos se diferencia considerablemente. Sólo observando el gráfico, consideramos que un enfoque no paramétrico podría servir más para realizar un modelo de regresión con estos datos. Se puede observar un sesgo mucho menor de los modelos no paramétricos que el ajuste lineal. Considerando que existe cierto cambio en la correlación entre las dos variables, cualquiera de los dos modelos no paramétricos podría servir para predecir mejor dichas situaciones. La única desventaja que observamos, para los valores más altos, donde hay menos datos, tiende a subreajustar, aunque no de forma muy importante. Calculemos los R^2 (coeficiente de determinación) para cada modelo.
 
 ```{r}
 cat("R^2 modelo lineal", summary(fit_lm)$r.squared)
@@ -480,7 +480,7 @@ plot(X, Y,
      ylab = "Longitud del glúteo a la rodilla (mm)"
 )
 
-lines(seq(min(X), max(X), length.out=500), Y_pred40, col = "red", lwd = 3, lty = 3)
+lines(seq(min(X), max(X), length.out=500), Y_pred40, col = "red", lwd = 3, lty = 2)
 
 ```
 Graficamos ahora el estimador de Nadaraya-Watson obtenida con la ventana optima del item (c)iii, en conjunto con el estimador del grafico de arriba:
@@ -494,7 +494,7 @@ plot(X, Y,
      ylab = "Longitud del glúteo a la rodilla (mm)"
 )
 
-lines(x, smooth_nw_opt$m, col = "green", lwd = 3, lty = 3)
+lines(x, smooth_nw_opt$m, col = "green", lwd = 3, lty = 2)
 lines(seq(min(X), max(X), length.out=500), Y_pred40, col = "red", lwd = 3, lty = 3)
 legend("bottomright", legend = c("Nadaraya-Watson Óptimo", "Linearsmooth"),
        col = c("green", "red"), lty = c(2, 3), lwd = 3)
