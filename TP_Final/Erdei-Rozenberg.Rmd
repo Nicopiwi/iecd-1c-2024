@@ -17,7 +17,7 @@ rm(list=ls())
 
 ### (a)
 
-Demostraremos que el predictor derivado del estimador de Nadaraya-Watson de la esperanza condicional $$\hat{Y_i} = \widehat{E(Y | X = X_i)}$$, 1 $\leq$ i $\leq$ n de la forma \[\boldsymbol{\hat{Y}} = \begin{pmatrix}
+Demostraremos que el predictor derivado del estimador de Nadaraya-Watson de la esperanza condicional $$\hat{Y_i} = \widehat{E(Y | X = X_i)}, 1 \leq i \leq n$$  de la forma \[\boldsymbol{\hat{Y}} = \begin{pmatrix}
 \hat{Y_{1}} & \hat{Y_{2}} & \cdots & \hat{Y_{n}}
 \end{pmatrix}^T \] donde  $$ \hat{Y_{i}} = \hat{m_h}(X_i)$$ es una transformación aplicada sobre $\textbf{Y}$.
 
@@ -191,7 +191,7 @@ attach(poblacion_femenina)
 
 ### (b)
 
-Separamos a la población femenina en grupos etarios de acuerdo al cuartil, y calculamos intervalo de confianza bootstrap de nivel aproximado 0.95. Para cada grupo, generamos un número (`n_bootstrap`, 1000) de muestras bootstrap. Cada muestra bootstrap se obtiene al seleccionar observaciones aleatoriamente con reemplazo del conjunto de datos original del grupo. Esto significa que algunas observaciones pueden ser seleccionadas más de una vez mientras que otras pueden no ser seleccionadas en absoluto. Para cada una de estas muestras bootstrap, calculamos la mediana de `HIP.CIRCUMFERENCE`, y el intervalo de confianza normal. Esto se hizo ordenando las medianas bootstrap y seleccionando los percentiles correspondientes al 2.5% y al 97.5% para un intervalo de confianza del 95%. Estos percentiles representan los límites inferior y superior del intervalo de confianza.
+Separamos a la población femenina en grupos etarios de acuerdo al cuartil, y calculamos intervalo de confianza bootstrap de nivel aproximado 0.95. Para cada grupo, calculamos la mediana muestral y generamos un número (`n_bootstrap`, 1000) de muestras bootstrap. Cada muestra bootstrap se obtiene al seleccionar observaciones aleatoriamente con reemplazo del conjunto de datos original del grupo. Para cada una de estas muestras $\it{bootstrap}$, calculamos la mediana de `HIP.CIRCUMFERENCE`, y el intervalo de confianza normal $\it{bootstrap}$, utilizando el resultado de que la distribución asintótica de la mediana muestral es normal. Para calcular este intervalo, estimamos el error estándar muestral mediante $\it{bootstrap}$, utilizando las medianas calculadas para cada muestra $\it{bootstrap}$.
 
 ```{r}
 quartiles <- quantile(poblacion_femenina$AGE.IN.MONTHS, probs = c(0.25, 0.5, 0.75))
@@ -202,15 +202,18 @@ poblacion_femenina$group <- cut(
 )
 
 ic_bootstrap <- function(data, n_bootstrap = 1000, conf_level = 0.95) {
+  sample_median <- median(data)
   medians <- c()
   
   for (i in 1:n_bootstrap){
     medians <- c(medians, median(sample(data, replace = TRUE)))
   }
-
-  lower_bound <- quantile(medians, (1 - conf_level) / 2)
-  upper_bound <- quantile(medians, 1 - (1 - conf_level) / 2)
-  list(median = median(data), lower = lower_bound, upper = upper_bound)
+  
+  se_bootstrap <- (1/(n_bootstrap-1))*sum((medians-mean(medians))^2)
+  z_alpha <- qnorm((1 - conf_level) / 2, lower.tail = FALSE)
+  lower_bound <- sample_median - z_alpha*se_bootstrap
+  upper_bound <- sample_median + z_alpha*se_bootstrap
+  list(median = sample_median, lower = lower_bound, upper = upper_bound)
 }
 
 results <- lapply(
