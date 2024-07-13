@@ -209,7 +209,7 @@ ic_bootstrap <- function(data, n_bootstrap = 1000, conf_level = 0.95) {
     medians <- c(medians, median(sample(data, replace = TRUE)))
   }
   
-  se_bootstrap <- (1/(n_bootstrap-1))*sum((medians-mean(medians))^2)
+  se_bootstrap <- (1/n_bootstrap)*sum((medians-mean(medians))^2)
   z_alpha <- qnorm((1 - conf_level) / 2, lower.tail = FALSE)
   lower_bound <- sample_median - z_alpha*se_bootstrap
   upper_bound <- sample_median + z_alpha*se_bootstrap
